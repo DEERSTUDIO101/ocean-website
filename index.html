@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOID HUB</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #222222;
+    --accent: #c8f135;
+    --accent-dim: #8aaa20;
+    --text: #e8e8e8;
+    --muted: #555555;
+    --danger: #ff3b3b;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── DENIED PAGE ── */
+  #denied-page {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh; text-align: center;
+    padding: 2rem;
+  }
+
+  .denied-skull {
+    font-size: 6rem;
+    margin-bottom: 1.5rem;
+    animation: flicker 3s infinite;
+  }
+
+  @keyframes flicker {
+    0%,100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.2; }
+    94% { opacity: 1; }
+    96% { opacity: 0.4; }
+    97% { opacity: 1; }
+  }
+
+  .denied-title {
+    font-family: var(--sans);
+    font-size: clamp(3rem, 10vw, 7rem);
+    font-weight: 800;
+    color: var(--danger);
+    line-height: 0.9;
+    letter-spacing: -2px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .denied-sub {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 2rem;
+  }
+
+  .denied-code {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent-dim);
+    background: #0f0f0f;
+    border: 1px solid var(--border);
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    max-width: 500px;
+    line-height: 1.8;
+  }
+
+  /* ── SHARED COMPONENTS ── */
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: var(--accent); color: #000; }
+  .btn.danger { border-color: var(--danger); color: var(--danger); }
+  .btn.danger:hover { background: var(--danger); color: #fff; }
+  .btn.ghost { border-color: var(--border); color: var(--muted); }
+  .btn.ghost:hover { border-color: var(--muted); color: var(--text); background: transparent; }
+
+  input, textarea, select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    width: 100%;
+    outline: none;
+    border-radius: 2px;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 120px; }
+  label { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 0.4rem; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tag.green { background: #1a2a0a; color: var(--accent); border: 1px solid #2a3f10; }
+  .tag.red { background: #2a0a0a; color: var(--danger); border: 1px solid #3f1010; }
+  .tag.gray { background: #1a1a1a; color: var(--muted); border: 1px solid var(--border); }
+
+  /* ── LOGIN PAGE ── */
+  #login-page {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 2rem;
+  }
+
+  .login-box {
+    width: 100%; max-width: 380px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 2.5rem;
+  }
+
+  .login-logo {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: -1px;
+    margin-bottom: 0.2rem;
+  }
+
+  .login-tagline {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 2rem;
+  }
+
+  .login-form { display: flex; flex-direction: column; gap: 1rem; }
+
+  .error-msg {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--danger);
+    padding: 0.5rem 0.8rem;
+    border: 1px solid #3a1010;
+    background: #1a0808;
+    display: none;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  #app {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0;
+    position: sticky; top: 0;
+    height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  .sidebar-logo {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .sidebar-logo span { color: var(--muted); font-weight: 400; font-size: 0.8rem; display: block; font-family: var(--mono); letter-spacing: 0.05em; }
+
+  .nav-item {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.1s;
+    border-left: 2px solid transparent;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .nav-item:hover { color: var(--text); background: #1a1a1a; }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: #111f00; }
+  .nav-item .icon { font-size: 0.9rem; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .user-badge {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 0.8rem;
+  }
+  .user-badge strong { color: var(--accent); }
+
+  /* MAIN CONTENT */
+  .main {
+    padding: 2.5rem;
+    overflow-y: auto;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+  }
+
+  .page-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 2rem;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+  .page-sub { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; margin-top: 0.2rem; }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    padding: 1.5rem;
+  }
+
+  .stat-val {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 2.5rem;
+    color: var(--accent);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.4rem;
+  }
+
+  /* SCRIPTS TABLE */
+  .table-wrap { border: 1px solid var(--border); overflow: hidden; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+  }
+
+  thead th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: #0e0e0e;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #141414; }
+
+  tbody td { padding: 0.9rem 1rem; vertical-align: middle; }
+
+  .script-name { color: var(--text); font-weight: 700; margin-bottom: 0.2rem; }
+  .script-desc { color: var(--muted); font-size: 0.7rem; }
+
+  .key-display {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent-dim);
+    background: #111f00;
+    padding: 2px 8px;
+    border: 1px solid #2a3f10;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+  .key-display:hover { color: var(--accent); }
+
+  .actions { display: flex; gap: 0.5rem; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 2rem;
+    display: none;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    width: 100%; max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .modal-title {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  .modal-close {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    color: var(--muted);
+    cursor: pointer;
+    background: none; border: none;
+    line-height: 1;
+    padding: 0.2rem;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body { padding: 1.5rem; }
+
+  .form-group { margin-bottom: 1.2rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    font-family: var(--mono); font-size: 0.75rem;
+    padding: 0.75rem 1.2rem;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    z-index: 200;
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.err { border-color: var(--danger); color: var(--danger); }
+
+  /* SETTINGS */
+  .settings-section {
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+  .settings-section-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: #0e0e0e;
+  }
+  .settings-section-body { padding: 1.5rem; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+  .settings-row:last-child { margin-bottom: 0; }
+  .settings-label { font-family: var(--mono); font-size: 0.8rem; color: var(--text); }
+  .settings-desc { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* EXEC PAGE */
+  .code-block {
+    background: #0a0f00;
+    border: 1px solid #2a3f10;
+    padding: 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--accent-dim);
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+    border-radius: 2px;
+  }
+
+  .copy-btn {
+    position: absolute; top: 0.8rem; right: 0.8rem;
+  }
+  .code-wrap { position: relative; }
+
+  /* EMPTY STATE */
+  .empty {
+    padding: 4rem 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    border: 1px dashed var(--border);
+  }
+  .empty-big { font-size: 3rem; margin-bottom: 1rem; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- DENIED PAGE (shown on direct /script URLs) -->
+<!-- ══════════════════════════════════════════ -->
+<div id="denied-page" style="display:none">
+  <div class="denied-skull">☠</div>
+  <div class="denied-title">No<br>Access.</div>
+  <div class="denied-sub">[ ERROR 403 · UNAUTHORIZED ]</div>
+  <div class="denied-code">-- You thought you could just grab the script URL?<br>-- Nice try. Get a key from the hub owner.<br>-- Or keep touching grass. Your choice.</div>
+</div>
+
+<!-- ══════════════════════ -->
+<!-- LOGIN PAGE            -->
+<!-- ══════════════════════ -->
+<div id="login-page" style="display:none">
+  <div class="login-box">
+    <div class="login-logo">VOID HUB</div>
+    <div class="login-tagline">// admin panel · authorized only</div>
+    <div class="login-form">
+      <div class="error-msg" id="login-error">invalid credentials — try again</div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-user" autocomplete="off" placeholder="username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••••">
+      </div>
+      <button class="btn" onclick="doLogin()">→ Enter Panel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ -->
+<!-- MAIN APP              -->
+<!-- ══════════════════════ -->
+<div id="app" style="display:none">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      VOID HUB
+      <span>// script manager</span>
+    </div>
+
+    <nav>
+      <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+        <span class="icon">▣</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('scripts')" id="nav-scripts">
+        <span class="icon">◈</span> Scripts
+      </div>
+      <div class="nav-item" onclick="showPage('upload')" id="nav-upload">
+        <span class="icon">⊕</span> Upload
+      </div>
+      <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
+        <span class="icon">◎</span> Settings
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-badge">logged in as<br><strong id="current-user-display">—</strong></div>
+      <button class="btn ghost" style="width:100%; font-size:0.7rem" onclick="doLogout()">logout</button>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">// overview · void hub</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-val" id="stat-scripts">0</div>
+          <div class="stat-label">total scripts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-active">0</div>
+          <div class="stat-label">active</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-keys">0</div>
+          <div class="stat-label">exec keys</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-users">2</div>
+          <div class="stat-label">admins</div>
+        </div>
+      </div>
+
+      <div class="page-title" style="font-size:1.1rem; margin-bottom:1rem">Recent Scripts</div>
+      <div id="recent-list" class="table-wrap">
+        <div class="empty"><div class="empty-big">◈</div>no scripts yet — upload one</div>
+      </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <div class="page" id="page-scripts">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Scripts</div>
+          <div class="page-sub">// manage · delete · regenerate keys</div>
+        </div>
+        <button class="btn" onclick="showPage('upload')">⊕ Upload New</button>
+      </div>
+      <div id="scripts-list" class="table-wrap">
+        <div class="empty"><div class="empty-big">◈</div>no scripts yet</div>
+      </div>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="page" id="page-upload">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Upload Script</div>
+          <div class="page-sub">// add new script to vault</div>
+        </div>
+      </div>
+
+      <div style="max-width: 640px;">
+        <div class="form-group form-row">
+          <div>
+            <label>Script Name</label>
+            <input type="text" id="up-name" placeholder="e.g. Dead Rails V2">
+          </div>
+          <div>
+            <label>Game / Platform</label>
+            <input type="text" id="up-game" placeholder="e.g. Dead Rails">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="up-desc" placeholder="short description">
+        </div>
+
+        <div class="form-group">
+          <label>Script Code (Lua)</label>
+          <textarea id="up-code" placeholder="-- paste your Lua script here&#10;print('hello void')"></textarea>
+        </div>
+
+        <div class="form-group form-row">
+          <div>
+            <label>Version</label>
+            <input type="text" id="up-ver" placeholder="v1.0" value="v1.0">
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="up-status">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Execution Key (leave blank to auto-generate)</label>
+          <input type="text" id="up-key" placeholder="auto-generate">
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:0.5rem">
+          <button class="btn" onclick="uploadScript()">→ Save Script</button>
+          <button class="btn ghost" onclick="clearUpload()">✕ Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Settings</div>
+          <div class="page-sub">// credentials · hub config</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-header">hub identity</div>
+        <div class="settings-section-body">
+          <div class="form-group">
+            <label>Hub Name</label>
+            <input type="text" id="cfg-hubname" value="VOID HUB">
+          </div>
+          <div class="form-group">
+            <label>Hub Tagline</label>
+            <input type="text" id="cfg-tagline" value="no cap, no rats, no key">
+          </div>
+          <button class="btn" onclick="saveHubConfig()">→ Save</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-header">admin credentials</div>
+        <div class="settings-section-body">
+          <div style="font-family: var(--mono); font-size: 0.75rem; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.6;">
+            Change passwords for admin accounts. Stored locally in browser.<br>
+            For production: connect Supabase (see README section below).
+          </div>
+          <div id="cred-list"></div>
+          <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+            <div class="form-group form-row">
+              <div>
+                <label>New Username</label>
+                <input type="text" id="new-admin-user" placeholder="kumpel">
+              </div>
+              <div>
+                <label>New Password</label>
+                <input type="password" id="new-admin-pass" placeholder="••••••••">
+              </div>
+            </div>
+            <button class="btn" onclick="addAdmin()">⊕ Add Admin</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-header">supabase integration (optional)</div>
+        <div class="settings-section-body">
+          <div style="font-family: var(--mono); font-size: 0.75rem; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.8;">
+            Connect Supabase to persist scripts across sessions and devices.<br>
+            1. Create project at supabase.com<br>
+            2. Run the SQL in the README<br>
+            3. Paste your URL + anon key below
+          </div>
+          <div class="form-group">
+            <label>Supabase URL</label>
+            <input type="text" id="sb-url" placeholder="https://xxxx.supabase.co">
+          </div>
+          <div class="form-group">
+            <label>Supabase Anon Key</label>
+            <input type="text" id="sb-key" placeholder="eyJhbGci...">
+          </div>
+          <button class="btn" onclick="saveSBConfig()">→ Connect</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-header">danger zone</div>
+        <div class="settings-section-body">
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Delete All Scripts</div>
+              <div class="settings-desc">permanently removes all scripts from storage</div>
+            </div>
+            <button class="btn danger" onclick="nukeScripts()">✕ Nuke All</button>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Reset Everything</div>
+              <div class="settings-desc">wipes all settings and scripts</div>
+            </div>
+            <button class="btn danger" onclick="fullReset()">✕ Full Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════════════════ -->
+<!-- SCRIPT VIEWER MODAL  -->
+<!-- ══════════════════════ -->
+<div class="modal-overlay" id="view-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="view-modal-title">—</div>
+      <button class="modal-close" onclick="closeModal('view-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:1rem; display:flex; gap:0.5rem; flex-wrap:wrap" id="view-tags"></div>
+      <div style="margin-bottom:1rem; font-family:var(--mono); font-size:0.75rem; color:var(--muted)" id="view-desc"></div>
+      <div style="margin-bottom:0.6rem; font-family:var(--mono); font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em">Execution Key</div>
+      <div style="display:flex; gap:0.5rem; margin-bottom:1.2rem; align-items:center">
+        <div class="key-display" id="view-key" onclick="copyKey(this)">—</div>
+        <span style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)">(click to copy)</span>
+      </div>
+      <div style="margin-bottom:0.6rem; font-family:var(--mono); font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em">Script Code</div>
+      <div class="code-wrap">
+        <div class="code-block" id="view-code">—</div>
+        <button class="btn" style="position:absolute;top:0.5rem;right:0.5rem;font-size:0.65rem;padding:0.3rem 0.7rem" onclick="copyCode()">copy</button>
+      </div>
+      <div style="margin-top:1.5rem; font-family:var(--mono); font-size:0.65rem; color:var(--muted); line-height:1.8">
+        <div style="color:var(--accent-dim); margin-bottom:0.4rem">-- Loader snippet (paste in your executor)</div>
+        <div id="view-loader" class="code-block" style="font-size:0.7rem"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+
+let state = {
+  scripts: [],
+  admins: [
+    { user: 'luca',   pass: 'void123' },
+    { user: 'kumpel', pass: 'void456' }
+  ],
+  hub: { name: 'VOID HUB', tagline: 'no cap, no rats, no key' },
+  sb: { url: '', key: '' },
+  currentUser: null
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('vh_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem('vh_state', JSON.stringify(state));
+}
+
+// ══════════════════════════════════════════════
+// ROUTING — detect /exec/KEY in URL
+// ══════════════════════════════════════════════
+
+function route() {
+  loadState();
+  const hash = window.location.hash;
+
+  // Example: #exec/MYKEY123
+  if (hash.startsWith('#exec/')) {
+    const key = hash.replace('#exec/', '').trim();
+    handleExec(key);
+    return;
+  }
+
+  // Any other hash that looks like a direct script path → denied
+  if (hash.startsWith('#script/') || hash.startsWith('#s/')) {
+    showDenied();
+    return;
+  }
+
+  // Normal load → login or app
+  if (state.currentUser) {
+    showApp();
+  } else {
+    showLoginPage();
+  }
+}
+
+function handleExec(key) {
+  const script = state.scripts.find(s => s.key === key && s.status === 'active');
+  if (!script) {
+    showDenied();
+    return;
+  }
+  // Return raw Lua code (plain text) — in a real deployment this would be a serverless function
+  document.body.innerHTML = '';
+  document.body.style.cssText = 'margin:0;background:#0a0a0a;color:#c8f135;font-family:monospace;padding:0;';
+  const pre = document.createElement('pre');
+  pre.style.cssText = 'margin:0;padding:0;white-space:pre-wrap;word-break:break-all;';
+  pre.textContent = script.code;
+  document.body.appendChild(pre);
+}
+
+function showDenied() {
+  document.getElementById('denied-page').style.display = 'flex';
+}
+
+function showLoginPage() {
+  document.getElementById('login-page').style.display = 'flex';
+}
+
+function showApp() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app').style.display = 'grid';
+  document.getElementById('current-user-display').textContent = state.currentUser;
+  refreshAll();
+}
+
+// ══════════════════════════════════════════════
+// LOGIN / LOGOUT
+// ══════════════════════════════════════════════
+
+function doLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const match = state.admins.find(a => a.user === user && a.pass === pass);
+  if (!match) {
+    const err = document.getElementById('login-error');
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 3000);
+    return;
+  }
+  state.currentUser = user;
+  saveState();
+  showApp();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-page').style.display !== 'none') doLogin();
+});
+
+function doLogout() {
+  state.currentUser = null;
+  saveState();
+  document.getElementById('app').style.display = 'none';
+  showLoginPage();
+}
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'scripts') renderScripts();
+  if (id === 'settings') renderSettings();
+}
+
+// ══════════════════════════════════════════════
+// KEY GENERATION
+// ══════════════════════════════════════════════
+
+function genKey() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let k = '';
+  for (let i = 0; i < 24; i++) {
+    if (i > 0 && i % 6 === 0) k += '-';
+    k += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return k;
+}
+
+// ══════════════════════════════════════════════
+// SCRIPTS
+// ══════════════════════════════════════════════
+
+function uploadScript() {
+  const name = document.getElementById('up-name').value.trim();
+  const game = document.getElementById('up-game').value.trim();
+  const desc = document.getElementById('up-desc').value.trim();
+  const code = document.getElementById('up-code').value.trim();
+  const ver  = document.getElementById('up-ver').value.trim() || 'v1.0';
+  const status = document.getElementById('up-status').value;
+  const keyInput = document.getElementById('up-key').value.trim();
+
+  if (!name || !code) { toast('name + code required', true); return; }
+
+  const script = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name, game, desc, code, ver, status,
+    key: keyInput || genKey(),
+    author: state.currentUser,
+    created: new Date().toISOString(),
+    updated: new Date().toISOString()
+  };
+
+  state.scripts.unshift(script);
+  saveState();
+  clearUpload();
+  toast('script uploaded ✓');
+  showPage('scripts');
+}
+
+function clearUpload() {
+  ['up-name','up-game','up-desc','up-code','up-key'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('up-ver').value = 'v1.0';
+  document.getElementById('up-status').value = 'active';
+}
+
+function deleteScript(id) {
+  if (!confirm('delete this script?')) return;
+  state.scripts = state.scripts.filter(s => s.id !== id);
+  saveState();
+  refreshAll();
+  toast('script deleted');
+}
+
+function regenKey(id) {
+  const s = state.scripts.find(s => s.id === id);
+  if (!s) return;
+  s.key = genKey();
+  s.updated = new Date().toISOString();
+  saveState();
+  refreshAll();
+  toast('new key generated');
+}
+
+function toggleStatus(id) {
+  const s = state.scripts.find(s => s.id === id);
+  if (!s) return;
+  s.status = s.status === 'active' ? 'inactive' : 'active';
+  s.updated = new Date().toISOString();
+  saveState();
+  refreshAll();
+  toast('status toggled');
+}
+
+// ══════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════
+
+function refreshAll() {
+  renderDashboard();
+  renderScripts();
+  renderSettings();
+}
+
+function scriptRow(s, mini = false) {
+  const statusTag = s.status === 'active'
+    ? `<span class="tag green">active</span>`
+    : `<span class="tag red">inactive</span>`;
+
+  if (mini) {
+    return `<tr>
+      <td><div class="script-name">${esc(s.name)}</div><div class="script-desc">${esc(s.game || '—')}</div></td>
+      <td>${statusTag}</td>
+      <td><span class="tag gray">${esc(s.ver)}</span></td>
+      <td style="color:var(--muted);font-size:0.7rem">${timeAgo(s.created)}</td>
+      <td><div class="actions">
+        <button class="btn" style="font-size:0.65rem;padding:0.3rem 0.7rem" onclick="viewScript('${s.id}')">view</button>
+      </div></td>
+    </tr>`;
+  }
+
+  return `<tr>
+    <td>
+      <div class="script-name">${esc(s.name)}</div>
+      <div class="script-desc">${esc(s.desc || s.game || '—')}</div>
+    </td>
+    <td>${statusTag}</td>
+    <td><span class="tag gray">${esc(s.ver)}</span></td>
+    <td>
+      <span class="key-display" title="click to copy" onclick="copyText('${s.key}')">${s.key.slice(0,8)}…</span>
+    </td>
+    <td style="color:var(--muted);font-size:0.7rem">${esc(s.author || '—')}</td>
+    <td style="color:var(--muted);font-size:0.7rem">${timeAgo(s.updated)}</td>
+    <td>
+      <div class="actions">
+        <button class="btn" style="font-size:0.65rem;padding:0.3rem 0.7rem" onclick="viewScript('${s.id}')">view</button>
+        <button class="btn ghost" style="font-size:0.65rem;padding:0.3rem 0.7rem" onclick="regenKey('${s.id}')" title="regenerate key">↻</button>
+        <button class="btn ghost" style="font-size:0.65rem;padding:0.3rem 0.7rem" onclick="toggleStatus('${s.id}')" title="toggle status">⏻</button>
+        <button class="btn danger" style="font-size:0.65rem;padding:0.3rem 0.7rem" onclick="deleteScript('${s.id}')">✕</button>
+      </div>
+    </td>
+  </tr>`;
+}
+
+function renderDashboard() {
+  const active = state.scripts.filter(s => s.status === 'active').length;
+  document.getElementById('stat-scripts').textContent = state.scripts.length;
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-keys').textContent = state.scripts.length;
+
+  const el = document.getElementById('recent-list');
+  if (!state.scripts.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-big">◈</div>no scripts yet — upload one</div>`;
+    return;
+  }
+  const recent = state.scripts.slice(0, 5);
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th>Name</th><th>Status</th><th>Ver</th><th>Added</th><th></th>
+    </tr></thead>
+    <tbody>${recent.map(s => scriptRow(s, true)).join('')}</tbody>
+  </table>`;
+}
+
+function renderScripts() {
+  const el = document.getElementById('scripts-list');
+  if (!state.scripts.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-big">◈</div>no scripts yet</div>`;
+    return;
+  }
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th>Name / Desc</th><th>Status</th><th>Ver</th><th>Key (partial)</th><th>Author</th><th>Updated</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${state.scripts.map(s => scriptRow(s, false)).join('')}</tbody>
+  </table>`;
+}
+
+function renderSettings() {
+  const el = document.getElementById('cred-list');
+  el.innerHTML = state.admins.map((a, i) => `
+    <div style="display:flex;align-items:center;gap:1rem;padding:0.6rem 0;border-bottom:1px solid var(--border)">
+      <span style="font-family:var(--mono);font-size:0.8rem;color:var(--accent);flex:1">${esc(a.user)}</span>
+      <button class="btn danger" style="font-size:0.65rem;padding:0.3rem 0.7rem" onclick="removeAdmin(${i})">✕ remove</button>
+    </div>
+  `).join('');
+
+  document.getElementById('sb-url').value = state.sb.url || '';
+  document.getElementById('sb-key').value = state.sb.key || '';
+  document.getElementById('cfg-hubname').value = state.hub.name || 'VOID HUB';
+  document.getElementById('cfg-tagline').value = state.hub.tagline || '';
+}
+
+// ══════════════════════════════════════════════
+// SCRIPT VIEWER MODAL
+// ══════════════════════════════════════════════
+
+function viewScript(id) {
+  const s = state.scripts.find(s => s.id === id);
+  if (!s) return;
+
+  document.getElementById('view-modal-title').textContent = s.name;
+  document.getElementById('view-key').textContent = s.key;
+  document.getElementById('view-key').setAttribute('data-key', s.key);
+  document.getElementById('view-desc').textContent = s.desc || 'no description';
+  document.getElementById('view-code').textContent = s.code;
+
+  const statusTag = s.status === 'active'
+    ? `<span class="tag green">active</span>`
+    : `<span class="tag red">inactive</span>`;
+
+  document.getElementById('view-tags').innerHTML = `
+    ${statusTag}
+    <span class="tag gray">${esc(s.ver)}</span>
+    ${s.game ? `<span class="tag gray">${esc(s.game)}</span>` : ''}
+  `;
+
+  // Loader snippet
+  const execUrl = `${location.origin}${location.pathname}#exec/${s.key}`;
+  document.getElementById('view-loader').textContent =
+    `-- Paste this in your executor:\nloadstring(game:HttpGet("${execUrl}"))()`;
+
+  document.getElementById('view-modal').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function copyKey(el) {
+  copyText(el.getAttribute('data-key') || el.textContent);
+}
+
+function copyCode() {
+  copyText(document.getElementById('view-code').textContent);
+}
+
+// ══════════════════════════════════════════════
+// SETTINGS ACTIONS
+// ══════════════════════════════════════════════
+
+function addAdmin() {
+  const user = document.getElementById('new-admin-user').value.trim();
+  const pass = document.getElementById('new-admin-pass').value;
+  if (!user || !pass) { toast('fill both fields', true); return; }
+  if (state.admins.find(a => a.user === user)) { toast('user already exists', true); return; }
+  state.admins.push({ user, pass });
+  saveState();
+  document.getElementById('new-admin-user').value = '';
+  document.getElementById('new-admin-pass').value = '';
+  renderSettings();
+  toast('admin added ✓');
+}
+
+function removeAdmin(i) {
+  if (state.admins[i].user === state.currentUser) { toast("can't remove yourself", true); return; }
+  if (state.admins.length <= 1) { toast('need at least 1 admin', true); return; }
+  if (!confirm('remove this admin?')) return;
+  state.admins.splice(i, 1);
+  saveState();
+  renderSettings();
+  toast('admin removed');
+}
+
+function saveHubConfig() {
+  state.hub.name = document.getElementById('cfg-hubname').value.trim() || 'VOID HUB';
+  state.hub.tagline = document.getElementById('cfg-tagline').value.trim();
+  saveState();
+  toast('hub config saved ✓');
+}
+
+function saveSBConfig() {
+  state.sb.url = document.getElementById('sb-url').value.trim();
+  state.sb.key = document.getElementById('sb-key').value.trim();
+  saveState();
+  toast('supabase config saved — refresh to apply');
+}
+
+function nukeScripts() {
+  if (!confirm('DELETE ALL SCRIPTS? this cannot be undone.')) return;
+  state.scripts = [];
+  saveState();
+  refreshAll();
+  toast('all scripts deleted');
+}
+
+function fullReset() {
+  if (!confirm('FULL RESET? all data will be wiped.')) return;
+  if (!confirm('are you really sure?')) return;
+  localStorage.removeItem('vh_state');
+  location.reload();
+}
+
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function timeAgo(iso) {
+  const d = new Date(iso);
+  const diff = (Date.now() - d) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => toast('copied ✓')).catch(() => toast('copy failed', true));
+}
+
+function toast(msg, err = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// Close modals on overlay click
+document.getElementById('view-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('view-modal');
+});
+
+// ══════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════
+route();
+</script>
+</body>
+</html>
